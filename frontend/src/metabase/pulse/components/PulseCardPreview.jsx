@@ -59,7 +59,7 @@ export default class PulseCardPreview extends Component {
             <div className="flex relative flex-full">
                 <div className="absolute top right p2 text-grey-2">
                     { attachmentsEnabled && !isAttachmentOnly &&
-                        <Tooltip tooltip={hasAttachment ? "Remove attachment" : "Attach file with results"}>
+                        <Tooltip tooltip={hasAttachment ? t`Remove attachment` : t`Attach file with results`}>
                             <Icon
                                 name="attachment" size={18}
                                 className={cx("cursor-pointer py1 pr1 text-brand-hover", { "text-brand": this.hasAttachment() })}

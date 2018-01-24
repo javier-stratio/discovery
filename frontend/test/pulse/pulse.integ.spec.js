@@ -62,6 +62,7 @@ describe("Pulse", () => {
             .setDisplayName("table")
     )
 
+    // possibly not necessary, but just to be sure we start with clean slate
     for (const pulse of await PulseApi.list()) {
       await PulseApi.delete({ pulseId: pulse.id })
     }
