@@ -546,6 +546,24 @@
      (send-pulse! (retrieve-pulse pulse-id))
      (et/summarize-multipart-email #"Pulse Name"))))
 
+;; Basic alert test, 1 card, 1 recipient, with CSV attachment
+(expect
+  (rasta-alert-email "Metabase alert: Test card has results"
+                     [{"Test card.*has results for you to see" true}, png-attachment, csv-attachment])
+  (tt/with-temp* [Card                  [{card-id :id}  (checkins-query {:breakout [["datetime-field" (data/id :checkins :date) "hour"]]})]
+                  Pulse                 [{pulse-id :id} {:alert_condition  "rows"
+                                                         :alert_first_only false}]
+                  PulseCard             [_              {:pulse_id    pulse-id
+                                                         :card_id     card-id
+                                                         :position    0
+                                                         :include_csv true}]
+                  PulseChannel          [{pc-id :id}    {:pulse_id pulse-id}]
+                  PulseChannelRecipient [_              {:user_id          (rasta-id)
+                                                         :pulse_channel_id pc-id}]]
+    (email-test-setup
+     (send-pulse! (retrieve-pulse-or-alert pulse-id))
+     (et/summarize-multipart-email #"Test card.*has results for you to see"))))
+
 ;; Basic test of card with CSV and XLS attachments, but no data. Should not include an attachment
 (expect
   (rasta-pulse-email)
