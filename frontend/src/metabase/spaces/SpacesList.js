@@ -1,16 +1,16 @@
 import React, { Component } from 'react'
 import { connect } from 'react-redux'
+import { Link } from "react-router";
 import cxs from 'cxs'
-import { Link } from '@curi/react'
 import { Box, Border, Button, Card, Flex, Heading, Subhead } from 'rebass'
 
-const mapStateToProps = ({ app }) => ({
-    spaces: app.spaces,
-    log: app.log.reverse().slice(0, 15),
-    databases: app.databases
+const mapStateToProps = ({ _spaces }) => ({
+    spaces: _spaces.spaces,
+    log: _spaces.log.reverse().slice(0, 15),
+    databases: _spaces.databases
 })
 
-class App extends Component {
+class SpacesList extends Component {
     render() {
         const { databases, spaces, log } = this.props
         return (
@@ -22,7 +22,7 @@ class App extends Component {
                     <Flex align='center' py={3}>
                         <Heading>Collections</Heading>
                         <Box ml='auto'>
-                            <Link to='NewCollection'>
+                            <Link to="/_spaces/collection/new">
                                 <Button>New collection</Button>
                             </Link>
                         </Box>
@@ -63,4 +63,4 @@ class App extends Component {
 }
 
 
-export default connect(mapStateToProps)(App);
+export default connect(mapStateToProps)(SpacesList);

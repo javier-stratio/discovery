@@ -1,7 +1,7 @@
 import React from 'react'
 import { connect } from 'react-redux'
 import { Absolute, Box, Button, ButtonOutline, Card, Flex, Heading, Input, Relative, Subhead } from 'rebass'
-import { Link } from '@curi/react'
+import { Link } from "react-router"
 
 import { getDatabaseByID } from './selectors'
 import {

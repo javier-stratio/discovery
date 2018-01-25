@@ -3,7 +3,7 @@ import { logItem } from './logic'
 
 import React from 'react'
 import { connect } from 'react-redux'
-import { Link } from '@curi/react'
+import { Link } from "react-router"
 import { Absolute, Box, Button, ButtonOutline, Card, Flex, Heading, Relative, Subhead } from 'rebass'
 import faker from 'faker'
 import FakeTable from './FakeTable'

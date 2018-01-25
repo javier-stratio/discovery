@@ -1,6 +1,6 @@
 import React from 'react'
 import { connect } from 'react-redux'
-import { Link } from '@curi/react'
+import { Link } from "react-router"
 import { getCurrentSpace } from './selectors'
 
 const mapStateToProps = (state) => {

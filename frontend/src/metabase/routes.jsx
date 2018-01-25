@@ -91,6 +91,9 @@ import SegmentXRay from "metabase/xray/containers/SegmentXRay.jsx";
 import CardXRay from "metabase/xray/containers/CardXRay.jsx";
 import { SharedTypeComparisonXRay, TwoTypesComparisonXRay } from "metabase/xray/containers/TableLikeComparison";
 
+/* Spaces */
+import getSpacesRoutes from "metabase/spaces/routes.jsx";
+
 import getAdminPermissionsRoutes from "metabase/admin/permissions/routes.jsx";
 
 
@@ -259,6 +262,10 @@ export const getRoutes = (store) =>
                     <Route path="compare/:modelTypePlural/:modelId1/:modelId2/:cost" component={SharedTypeComparisonXRay} />
                     <Route path="compare/:modelType1/:modelId1/:modelType2/:modelId2/:cost" component={TwoTypesComparisonXRay} />
                 </Route>
+
+                {/* SPACES */}
+                {getSpacesRoutes()}
+
 
                 {/* PULSE */}
                 <Route path="/pulse" title={t`Pulses`}>

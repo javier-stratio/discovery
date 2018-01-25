@@ -1,5 +1,5 @@
 import React from 'react'
-import { Link } from '@curi/react'
+import { Link } from "react-router"
 import { Absolute, Box, Flex } from 'rebass'
 
 import { Wrapper } from './shared'

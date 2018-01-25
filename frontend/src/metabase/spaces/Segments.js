@@ -1,7 +1,7 @@
 import React from 'react'
 import { Box, Heading, Subhead } from 'rebass'
 import { connect } from 'react-redux'
-import { Link } from '@curi/react'
+import { Link } from "react-router"
 
 import {
     getCurrentSpace,

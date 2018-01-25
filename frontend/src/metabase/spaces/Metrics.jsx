@@ -1,6 +1,6 @@
 import React, { Component } from 'react'
 import { connect } from 'react-redux'
-import { Link } from '@curi/react'
+import { Link } from "react-router"
 import Modal from 'react-modal'
 
 import { Box, ButtonOutline, Button, Card, Flex, Heading, Subhead } from 'rebass'

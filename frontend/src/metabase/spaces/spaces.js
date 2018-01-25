@@ -79,7 +79,7 @@ export const DEFAULT_STATE = {
 }
 
 // main logic reducer
-export function appReducer(state = DEFAULT_STATE, action) {
+export default function appReducer(state = DEFAULT_STATE, action) {
     switch(action.type) {
         case PIN_ITEM:
             const up =  Object.assign({}, state, {
