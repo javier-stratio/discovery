@@ -96,7 +96,7 @@
                  [org.xerial/sqlite-jdbc "3.21.0.1"]                  ; SQLite driver
                  [org.yaml/snakeyaml "1.18"]                          ; YAML parser (required by liquibase)
                  [org.xerial/sqlite-jdbc "3.16.1"]                    ; SQLite driver
-                 [com.stratio.jdbc/stratio-crossdata-jdbc4       "2.11.1"
+                 [com.stratio.jdbc/stratio-crossdata-jdbc4       "2.12.0"
                   :exclusions [org.bouncycastle/crypto,
                                bouncycastle/bcprov-jdk14,
                                org.bouncycastle.crypto.digests,
