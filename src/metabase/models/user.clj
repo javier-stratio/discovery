@@ -173,7 +173,7 @@
   "Convenience for creating a new user via LDAP. This account is considered active immediately; thus all active admins
   will recieve an email right away."
   [first-name last-name email-address is_superuser]
-  {:pre [(string? first-name) (string? last-name) (u/is-email? email-address)]}
+  {:pre [(string? first-name) (string? last-name) (u/email? email-address)]}
   (if-let [existing-user (db/select-one [User :id :is_active :google_auth], :email email-address)]
     ;; this user already exists but is inactive, so simply reactivate the account
     (reactivate-user! existing-user first-name last-name)

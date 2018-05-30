@@ -65,6 +65,13 @@
      (nth (:aggregation query) index)
      (recur index (:source-query query) (dec aggregation-level)))))
 
+(defn display_name
+  "Return the pieces that represent a path to FIELD, of the form `[table-name parent-fields-name* field-name]`."
+  [{display :field-name, {display2 :field-name} :field} ]
+  (if (string? display)
+    (str display)
+    (str display2)))
+
 (defmulti ^{:doc          (str "Return an appropriate HoneySQL form for an object. Dispatches off both driver and object "
                                "classes making this easy to override in any places needed for a given driver.")
             :arglists     '([driver x])
@@ -528,7 +535,7 @@
   (try (f)
        (finally (.rollback (jdbc/get-connection conn)))))
 
-(defn- do-in-transaction [connection f]
+(defn do-in-transaction [connection f]
   (jdbc/with-db-transaction [transaction-connection connection]
     (do-with-auto-commit-disabled transaction-connection (partial f transaction-connection))))
 

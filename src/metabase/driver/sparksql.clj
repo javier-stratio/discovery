@@ -66,6 +66,7 @@
         (recur honeysql-form more)
         honeysql-form))))
 
+
 (defn- apply-page-using-row-number-for-offset
   "Apply `page` clause to HONEYSQL-FROM, using row_number() for drivers that do not support offsets"
   [honeysql-form {{:keys [items page]} :page}]
