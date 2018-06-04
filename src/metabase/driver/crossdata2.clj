@@ -89,6 +89,7 @@
        (let [db-connection (sql/db->jdbc-connection-spec database)]
          (hive-like/run-query-without-timezone driver settings db-connection query))))))
 
+
 (defn apply-order-by
   "Apply `order-by` clause to HONEYSQL-FORM. Default implementation of `apply-order-by` for SQL drivers."
   [_ honeysql-form {subclauses :order-by}]
