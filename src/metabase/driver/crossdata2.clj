@@ -84,7 +84,7 @@
                                   (hive-like/unprepare (cons (:query query) (:params query)))
                                   (:query query)))
                   (dissoc :params))]
-    (sqlqp/do-with-try-catch
+    (qprocessor/do-with-try-catch
      (fn []
        (let [db-connection (sql/db->jdbc-connection-spec database)]
          (hive-like/run-query-without-timezone driver settings db-connection query))))))
