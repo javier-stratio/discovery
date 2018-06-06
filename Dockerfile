@@ -68,7 +68,7 @@ RUN bin/build
 
 # remove unnecessary packages & tidy up
 RUN apk del nodejs git wget python make g++
-RUN rm -rf /root/.lein /root/.m2 /root/.node-gyp /root/.npm /root/.yarn /root/.yarn-cache /tmp/* /var/cache/apk/* /app/source/node_modules /app/source/target/uberjar/classes
+RUN rm -rf /root/.lein /root/.m2 /root/.node-gyp /root/.npm /root/.yarn /root/.yarn-cache /tmp/* /var/cache/apk/* /app/source/node_modules /app/source/target/uberjar/classes /usr/bin/mvn
 RUN rm -f /app/source/target/uberjar/metabase-metabase-SNAPSHOT.jar
 
 # expose our default runtime port

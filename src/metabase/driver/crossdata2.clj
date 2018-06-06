@@ -87,7 +87,7 @@
     (qprocessor/do-with-try-catch
      (fn []
        (let [db-connection (sql/db->jdbc-connection-spec database)]
-         (hive-like/run-query-without-timezone driver settings db-connection query))))))
+         (qprocessor/do-in-transaction db-connection (partial qprocessor/run-query-with-out-remark query)))))))
 
 
 (defn apply-order-by
