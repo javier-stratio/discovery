@@ -74,21 +74,19 @@
   "Params to include in the JDBC connection spec to disable SSL."
   {:sslmode "disable"})
 
-;; we need this because transactions are not supported in Hive 1.2.1
-;; bound variables are not supported in Spark SQL (maybe not Hive either, haven't checked)
-(defn- execute-query
+(defn execute-query
   "Process and run a native (raw SQL) QUERY."
-  [driver {:keys [database settings], query :native, :as outer-query}]
-  (let [query (-> (assoc query :remark (qputil/query->remark outer-query))
-                  (assoc :query (if (seq (:params query))
-                                  (hive-like/unprepare (cons (:query query) (:params query)))
-                                  (:query query)))
-                  (dissoc :params))]
-    (qprocessor/do-with-try-catch
-     (fn []
-       (let [db-connection (sql/db->jdbc-connection-spec database)]
-         (qprocessor/do-in-transaction db-connection (partial qprocessor/run-query-with-out-remark query)))))))
+  [driver {:keys [database settings ], query :native, {sql :query, params :params} :native, :as outer-query}]
 
+  (let [sql (str
+              (if (seq params)
+                (unprepare/unprepare (cons sql params))
+                sql))]
+    (let [query (assoc query :remark  "", :query  sql, :params  nil)]
+      (qprocessor/do-with-try-catch
+        (fn []
+          (let [db-connection (sql/db->jdbc-connection-spec database)]
+            (qprocessor/do-in-transaction db-connection (partial qprocessor/run-query-with-out-remark query))))))))
 
 (defn apply-order-by
   "Apply `order-by` clause to HONEYSQL-FORM. Default implementation of `apply-order-by` for SQL drivers."
@@ -268,7 +266,7 @@
           :column->base-type         (u/drop-first-arg column->base-type)
           :connection-details->spec  (u/drop-first-arg connection-details->spec)
           :date                      (u/drop-first-arg hive-like/date)
-          ;;:field->identifier         (u/drop-first-arg hive-like/field->identifier)
+          :field->identifier         (u/drop-first-arg hive-like/field->identifier)
           :quote-style               (constantly :mysql)
           :current-datetime-fn       (u/drop-first-arg (constantly hive-like/now))
           :string-length-fn          (u/drop-first-arg hive-like/string-length-fn)
