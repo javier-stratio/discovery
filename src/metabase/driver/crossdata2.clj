@@ -268,7 +268,7 @@
           :column->base-type         (u/drop-first-arg hive-like/column->base-type)
           :connection-details->spec  (u/drop-first-arg connection-details->spec)
           :date                      (u/drop-first-arg hive-like/date)
-          :field->identifier         (u/drop-first-arg hive-like/field->identifier)
+          ;;:field->identifier         (u/drop-first-arg hive-like/field->identifier)
           :quote-style               (constantly :mysql)
           :current-datetime-fn       (u/drop-first-arg (constantly hive-like/now))
           :string-length-fn          (u/drop-first-arg hive-like/string-length-fn)
