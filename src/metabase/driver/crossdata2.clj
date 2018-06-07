@@ -265,7 +265,7 @@
          {:apply-page                (u/drop-first-arg apply-page-using-row-number-for-offset)
           :apply-source-table        (u/drop-first-arg apply-source-table)
           :apply-join-tables         (u/drop-first-arg apply-join-tables)
-          :column->base-type         (u/drop-first-arg hive-like/column->base-type)
+          :column->base-type         (u/drop-first-arg column->base-type)
           :connection-details->spec  (u/drop-first-arg connection-details->spec)
           :date                      (u/drop-first-arg hive-like/date)
           ;;:field->identifier         (u/drop-first-arg hive-like/field->identifier)
