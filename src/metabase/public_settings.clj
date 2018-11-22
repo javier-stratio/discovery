@@ -40,7 +40,33 @@
                    (let [value (str (UUID/randomUUID))]
                      (setting/set-string! :site-uuid value)
                      value))))
+(defsetting user-header
+  "The header with the user to direct authentication."
+  :default "")
 
+(defsetting group-header
+  "The header with the group to direct user creation and authentication."
+  :default "")
+
+(defsetting admin-group-header
+  "The header with the collection of groups designed as administrators."
+  :default "")
+
+(defsetting group-header-delimiter
+  "Character used as delimiter for group header parameter."
+  :default ",")
+
+(defsetting init-admin-user
+  "The init admin user created when the instance is initiated"
+  :default "")
+
+(defsetting init-admin-mail
+  "The init admin user mail created when the instance is initiated"
+  :default "")
+
+(defsetting init-admin-password
+  "The init admin user password created when the instance is initiated"
+  :default "")
 ;; This value is *guaranteed* to never have a trailing slash :D
 ;; It will also prepend `http://` to the URL if there's not protocol when it comes in
 (defsetting site-url
