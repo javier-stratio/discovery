@@ -2,7 +2,7 @@
 
 ## 0.32.0 (upcoming)
 
-* Pending changelog
+* [DGPB-1583] Fix init login function
 
 ## 0.31.0-ccddeec (Built: October 08, 2018 | Released: October 30, 2018)
 
