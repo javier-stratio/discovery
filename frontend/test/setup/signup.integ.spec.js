@@ -60,7 +60,7 @@ describe("setup wizard", () => {
         .find(Setup)
         .find("h1")
         .text(),
-    ).toBe("Welcome to Discovery");
+    ).toBe("Welcome to Metabase");
   });
 
   it("should allow you to create an account", async () => {

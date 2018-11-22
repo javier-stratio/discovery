@@ -1,32 +1,32 @@
 (ns metabase.api.session
-    "/api/session endpoints"
-    (:require [cemerick.friend.credentials :as creds]
-              [cheshire.core :as json]
-              [clj-http.client :as http]
-              [clojure.tools.logging :as log]
-              [compojure.core :refer [DELETE GET POST]]
-              [metabase
-               [events :as events]
-               [public-settings :as public-settings]
-               [util :as u]]
-              [metabase.api.common :as api]
-              [metabase.email.messages :as email]
-              [metabase.integrations.ldap :as ldap]
-              [metabase.models
-               [session :refer [Session]]
-               [setting :refer [defsetting]]
-               [user :as user :refer [User]]
-               [permissions-group :as group :refer [PermissionsGroup]]
-               [permissions-group-membership :refer [PermissionsGroupMembership]]]
-              [metabase.util
-               [password :as pass]
-               [schema :as su]]
-              [puppetlabs.i18n.core :refer [trs tru]]
-              [schema.core :as s]
-              [throttle.core :as throttle]
-              [metabase.public-settings :as public-settings]
-              [toucan.db :as db])
-    (:import java.util.UUID))
+  "/api/session endpoints"
+  (:require [cemerick.friend.credentials :as creds]
+            [cheshire.core :as json]
+            [clj-http.client :as http]
+            [clojure.tools.logging :as log]
+            [compojure.core :refer [DELETE GET POST]]
+            [metabase
+             [config :as config]
+             [events :as events]
+             [public-settings :as public-settings]
+             [util :as u]]
+            [metabase.api.common :as api]
+            [metabase.email.messages :as email]
+            [metabase.integrations.ldap :as ldap]
+            [metabase.models
+             [session :refer [Session]]
+             [setting :refer [defsetting]]
+             [user :as user :refer [User]]
+             [permissions-group :as group :refer [PermissionsGroup]]
+             [permissions-group-membership :refer [PermissionsGroupMembership]]]
+            [metabase.util
+             [i18n :as ui18n :refer [trs tru]]
+             [password :as pass]
+             [schema :as su]]
+            [schema.core :as s]
+            [throttle.core :as throttle]
+            [toucan.db :as db])
+  (:import java.util.UUID))
 
 (defn- create-session!
   "Generate a new `Session` for a given `User`. Returns the newly generated session ID."
@@ -60,7 +60,7 @@
         (when-not (ldap/verify-password user-info password)
           ;; Since LDAP knows about the user, fail here to prevent the local strategy to be tried with a possibly
           ;; outdated password
-          (throw (ex-info password-fail-message
+          (throw (ui18n/ex-info password-fail-message
                    {:status-code 400
                     :errors      {:password password-fail-snippet}})))
         ;; password is ok, return new session
@@ -68,7 +68,7 @@
       (catch com.unboundid.util.LDAPSDKException e
         (log/error
          (u/format-color 'red
-             (trs "Problem connecting to LDAP server, will fallback to local authentication {0}" (.getMessage e))))))))
+             (trs "Problem connecting to LDAP server, will fall back to local authentication: {0}" (.getMessage e))))))))
 
 ;; TODO romartin:
 (defn- email-login
@@ -81,6 +81,8 @@
       (when-let [user (db/select-one [User :id :password_salt :password :last_login], :email username, :is_active true)]
         (when (pass/verify-password password (:password_salt user) (:password user))
               {:id (create-session! user)})))))
+
+(def ^:private throttling-disabled? (config/config-bool :mb-disable-session-throttle))
 
 
 (defn- get-existing-groups
@@ -132,15 +134,15 @@
   [:as {{:keys [username password]} :body, remote-address :remote-addr, headers :headers}]
   {username su/NonBlankString
    password su/NonBlankString}
-  (throttle/check (login-throttlers :ip-address) remote-address)
-  (throttle/check (login-throttlers :username)   username)
+  (throttle-check (login-throttlers :ip-address) remote-address)
+  (throttle-check (login-throttlers :username)   username)
   ;; Primitive "strategy implementation", should be reworked for modular providers in #3210
   (or (ldap-login username password)  ; First try LDAP if it's enabled
       (email-login username password headers) ; Then try local authentication
       (group-login username password headers) ; Then try local authentication
       ;; If nothing succeeded complain about it
       ;; Don't leak whether the account doesn't exist or the password was incorrect
-      (throw (ex-info password-fail-message
+      (throw (ui18n/ex-info password-fail-message
                {:status-code 400
                 :errors      {:password password-fail-snippet}}))))
 
@@ -168,8 +170,8 @@
   "Send a reset email when user has forgotten their password."
   [:as {:keys [server-name] {:keys [email]} :body, remote-address :remote-addr}]
   {email su/Email}
-  (throttle/check (forgot-password-throttlers :ip-address) remote-address)
-  (throttle/check (forgot-password-throttlers :email)      email)
+  (throttle-check (forgot-password-throttlers :ip-address) remote-address)
+  (throttle-check (forgot-password-throttlers :email)      email)
   ;; Don't leak whether the account doesn't exist, just pretend everything is ok
   (when-let [{user-id :id, google-auth? :google_auth} (db/select-one ['User :id :google_auth]
                                                         :email email, :is_active true)]
@@ -244,10 +246,10 @@
 (defn- google-auth-token-info [^String token]
   (let [{:keys [status body]} (http/post (str "https://www.googleapis.com/oauth2/v3/tokeninfo?id_token=" token))]
     (when-not (= status 200)
-      (throw (ex-info (tru "Invalid Google Auth token.") {:status-code 400})))
+      (throw (ui18n/ex-info (tru "Invalid Google Auth token.") {:status-code 400})))
     (u/prog1 (json/parse-string body keyword)
       (when-not (= (:email_verified <>) "true")
-        (throw (ex-info (tru "Email is not verified.") {:status-code 400}))))))
+        (throw (ui18n/ex-info (tru "Email is not verified.") {:status-code 400}))))))
 
 ;; TODO - are these general enough to move to `metabase.util`?
 (defn- email->domain ^String [email]
@@ -266,7 +268,7 @@
     ;; Use some wacky status code (428 - Precondition Required) so we will know when to so the error screen specific
     ;; to this situation
     (throw
-     (ex-info (tru "You''ll need an administrator to create a Metabase account before you can use Google to log in.")
+     (ui18n/ex-info (tru "You''ll need an administrator to create a Metabase account before you can use Google to log in.")
        {:status-code 428}))))
 
 (s/defn ^:private google-auth-create-new-user!
@@ -288,7 +290,7 @@
   "Login with Google Auth."
   [:as {{:keys [token]} :body, remote-address :remote-addr}]
   {token su/NonBlankString}
-  (throttle/check (login-throttlers :ip-address) remote-address)
+  (throttle-check (login-throttlers :ip-address) remote-address)
   ;; Verify the token is valid with Google
   (let [{:keys [given_name family_name email]} (google-auth-token-info token)]
     (log/info (trs "Successfully authenticated Google Auth token for: {0} {1}" given_name family_name))

@@ -486,11 +486,55 @@
          {:name "Stamp Collection", :color "#123456"})
         (dissoc :id))))
 
-;; test that non-admins aren't allowed to create a collection
+;; test that non-admins aren't allowed to create a collection in the root collection
 (expect
   "You don't have permissions to do that."
-  ((user->client :rasta) :post 403 "collection"
-   {:name "Stamp Collection", :color "#123456"}))
+  (tu/with-non-admin-groups-no-root-collection-perms
+    ((user->client :rasta) :post 403 "collection"
+     {:name "Stamp Collection", :color "#123456"})))
+
+;; Can a non-admin user with Root Collection perms add a new collection to the Root Collection? (#8949)
+(expect
+  {:name              "Stamp Collection"
+   :description       nil
+   :color             "#123456"
+   :archived          false
+   :location          "/"
+   :personal_owner_id nil
+   :slug              "stamp_collection"}
+  (tu/with-model-cleanup [Collection]
+    (tu/with-non-admin-groups-no-root-collection-perms
+      (-> (tt/with-temp* [PermissionsGroup           [group]
+                          PermissionsGroupMembership [_ {:user_id (user->id :rasta), :group_id (u/get-id group)}]]
+            (perms/grant-collection-readwrite-permissions! group collection/root-collection)
+            ((user->client :rasta) :post 200 "collection"
+             {:name "Stamp Collection", :color "#123456"}))
+          (dissoc :id)))))
+
+;; Can I create a Collection as a child of an existing collection?
+(expect
+  {:id                true
+   :name              "Trading Card Collection"
+   :slug              "trading_card_collection"
+   :description       "Collection of basketball cards including limited-edition holographic Draymond Green"
+   :color             "#ABCDEF"
+   :archived          false
+   :location          "/A/C/D/"
+   :personal_owner_id nil}
+  (tu/with-model-cleanup [Collection]
+    (with-collection-hierarchy [a c d]
+      (-> ((user->client :crowberto) :post 200 "collection"
+           {:name        "Trading Card Collection"
+            :color       "#ABCDEF"
+            :description "Collection of basketball cards including limited-edition holographic Draymond Green"
+            :parent_id   (u/get-id d)})
+          (update :location collection-test/location-path-ids->names)
+          (update :id integer?)))))
+
+
+;;; +----------------------------------------------------------------------------------------------------------------+
+;;; |                                            PUT /api/collection/:id                                             |
+;;; +----------------------------------------------------------------------------------------------------------------+
 
 ;; Can I create a Collection as a child of an existing collection?
 (expect
