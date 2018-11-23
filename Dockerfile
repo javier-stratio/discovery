@@ -2,7 +2,7 @@
 # STAGE 1: builder
 ###################
 
-FROM openjdk:8-jdk-alpine as builder
+FROM java:openjdk-8-jdk-alpine as builder
 
 WORKDIR /app/source
 
@@ -12,11 +12,10 @@ ENV LC_CTYPE en_US.UTF-8
 # bash:    various shell scripts
 # wget:    installing lein
 # git:     ./bin/version
-# yarn:  frontend building
+# nodejs:  frontend building
 # make:    backend building
 # gettext: translations
-
-RUN apk add --update bash yarn git wget make gettext
+RUN apk add --update bash nodejs git wget make gettext
 
 ADD . /app/source
 
@@ -79,11 +78,12 @@ RUN keytool -noprompt -import -trustcacerts -alias aws-rds \
   -keystore /etc/ssl/certs/java/cacerts \
   -keypass changeit -storepass changeit
 
+
 # ###################
 # # STAGE 2: runner
 # ###################
 
-FROM openjdk:8-jre-alpine as runner
+FROM java:openjdk-8-jre-alpine as runner
 
 WORKDIR /app
 
