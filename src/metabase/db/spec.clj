@@ -1,10 +1,7 @@
 (ns metabase.db.spec
   "Functions for creating JDBC DB specs for a given engine.
   Only databases that are supported as application DBs should have functions in this namespace;
-  otherwise, similar functions are only needed by drivers, and belong in those namespaces."
-  (:require [clojure.string :as str]
-            [medley.core :as m]
-            [ring.util.codec :as codec]))
+  otherwise, similar functions are only needed by drivers, and belong in those namespaces.")
 
 (defn h2
   "Create a database specification for a h2 database. Opts should include a key
@@ -17,17 +14,6 @@
           :subname     db}
          (dissoc opts :db)))
 
-(defn- remove-required-keys [db-spec & more-keys]
-  (apply dissoc db-spec (concat [:host :port :db :dbname :user :password :additional-options]
-                                more-keys)))
-
-(defn- purge-nil-values [m]
-  (m/remove-kv (fn [k v] (or (nil? k) (nil? v))) m))
-
-(defn- make-subname [host port db extra-connection-params]
-  (let [query-params (codec/form-encode (purge-nil-values extra-connection-params))]
-    (str "//" host ":" port "/" db (when-not (str/blank? query-params)
-                                     (str "?" query-params)))))
 
 (defn postgres
   "Create a database specification for a postgres database. Opts should include
@@ -45,9 +31,10 @@
            (dissoc opts :host :port :db)
            )
     (merge {:classname "org.postgresql.Driver" ; must be in classpath
-            :subprotocol "postgresql"
-            :subname (str "//" host ":" port "/" db "?OpenSourceSubProtocolOverride=true")}
-           (dissoc opts :host :port :db)))
+           :subprotocol "postgresql"
+           :subname (str "//" host ":" port "/" db "?OpenSourceSubProtocolOverride=true")}
+          (dissoc opts :host :port :db))))
+
 
 (defn crossdata
   "Create a database specification for a postgres database. Opts should include
@@ -68,6 +55,7 @@
             :subname (str "//Server=" host ":" port ";UID=" user ";LogLevel=3;LogPath=/tmp/crossdata-jdbc-logs")}
            (dissoc opts :host :port :db))))
 
+
 (defn crossdata2
   "Create a database specification for a postgres database. Opts should include
   keys for :db, :user, and :password. You can also optionally set host and
@@ -87,6 +75,7 @@
             :subname (str "//Server=" host ":" port ";UID=" user ";LogLevel=3;LogPath=/tmp/crossdata-jdbc-logs")}
            (dissoc opts :host :port :db))))
 
+
 (defn mysql
   "Create a database specification for a mysql database. Opts should include keys
   for :db, :user, and :password. You can also optionally set host and port.
@@ -94,12 +83,11 @@
   [{:keys [host port db]
     :or   {host "localhost", port 3306, db ""}
     :as   opts}]
-  (let [extra-connection-params (remove-required-keys opts)]
-    (merge {:classname   "com.mysql.jdbc.Driver"
-            :subprotocol "mysql"
-            :subname     (make-subname host port db extra-connection-params)
-            :delimiters  "`"}
-           (dissoc opts :host :port :db))))
+  (merge {:classname   "com.mysql.jdbc.Driver"
+          :subprotocol "mysql"
+          :subname     (str "//" host ":" port "/" db)
+          :delimiters  "`"}
+         (dissoc opts :host :port :db)))
 
 
 ;; !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
