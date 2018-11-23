@@ -101,7 +101,7 @@ export default class ProfileLink extends Component {
           <Modal small onClose={this.closeModal}>
             <div className="px4 pt4 pb2 text-centered relative">
               <h2 style={{ fontSize: "1.75em" }} className="text-dark">
-                {t`Thanks for using`} Metabase!
+                {t`Thanks for using`} Discovery!
               </h2>
               <div className="pt2">
                 <h3 className="text-dark mb1">
