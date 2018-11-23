@@ -2,17 +2,17 @@
 
 ## 0.32.0 (upcoming)
 
-* Pending changelog
+* [DGPB-1616] Upgrade to Metabase 0.31.1
 
 ## 0.31.0-ccddeec (Built: October 08, 2018 | Released: October 30, 2018)
 
 * [DGPB-1426] Error de agregacion de fechas
-* [DGPB-1357] Upgrade to metabase 0.30.1
+* [DGPB-1357] Upgrade to Metabase 0.30.1
 * [DGPB-1345] Add more metadata refresh options
 
 ## 0.30.0-78eb83f (Built: June 27, 2018 | Released: July 13, 2018)
 
-* [DGPB-1119] Upgrade to metabase 0.29.4
+* [DGPB-1119] Upgrade to Metabase 0.29.4
 
 ## 0.29.0-d524010 (Built: May 24, 2018 | Released: June 04, 2018)
 

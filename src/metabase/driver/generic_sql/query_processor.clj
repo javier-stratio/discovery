@@ -44,6 +44,13 @@
 ;;; |                              ->honeysql multimethod def & low-level method impls                               |
 ;;; +----------------------------------------------------------------------------------------------------------------+
 
+(defn display_name
+  "Return the pieces that represent a path to FIELD, of the form `[table-name parent-fields-name* field-name]`."
+  [{display :field-name, {display2 :field-name} :field} ]
+  (if (string? display)
+    (str display)
+    (str display2)))
+
 ;; this is the primary way to override behavior for a specific clause or object class.
 
 (defmulti ^{:doc (str "Return an appropriate HoneySQL form for an object. Dispatches off both driver and either clause "

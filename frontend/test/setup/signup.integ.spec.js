@@ -60,7 +60,7 @@ describe("setup wizard", () => {
         .find(Setup)
         .find("h1")
         .text(),
-    ).toBe("Welcome to Metabase");
+    ).toBe("Welcome to Discovery");
   });
 
   it("should allow you to create an account", async () => {
@@ -145,7 +145,7 @@ describe("setup wizard", () => {
     expect(preferencesStep.find(".SetupStep--active").length).toBe(1);
   });
 
-  it('should show you scheduling step if you select "Let me choose when Metabase syncs and scans"', async () => {
+  it('should show you scheduling step if you select "Let me choose when Discovery syncs and scans"', async () => {
     // we can conveniently test returning to database settings now as well
     const connectionStep = app.find(DatabaseConnectionStep);
     click(connectionStep.find("h3"));
