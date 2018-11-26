@@ -21,10 +21,11 @@
             [metabase.driver.generic-sql.util.unprepare :as unprepare]
             [metabase.util.honeysql-extensions :as hx]
             [toucan.db :as db])
-  (:import java.util.UUID
-           (java.util Collections Date))
   (:import java.util.TimeZone
-           org.joda.time.DateTimeZone))
+           org.joda.time.DateTimeZone)
+  (:import java.util.UUID
+           (java.util Collections Date)
+           metabase.query_processor.interface.Field))
 
 (defrecord CrossdataDriver []
   clojure.lang.Named
