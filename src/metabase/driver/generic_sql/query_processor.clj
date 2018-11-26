@@ -649,8 +649,15 @@
     {:rows    (or rows [])
      :columns (map u/keyword->qualified-name columns)}))
 
-
-;;; -------------------------- Running queries: exception handling & disabling auto-commit ---------------------------
+(defn run-query-with-out-remark
+  "Run the query itself."
+  [{sql :query, params :params, remark :remark} connection]
+  (let [sql (str (hx/unescape-dots sql))
+        ;;(let [sql (hx/unescape-dots sql)
+        statement (into [sql] params)
+        [columns & rows] (jdbc/query connection statement {:identifiers identity, :as-arrays? true})]
+    {:rows    (or rows [])
+     :columns columns}))
 
 (defn- exception->nice-error-message ^String [^SQLException e]
   (or (->> (.getMessage e)     ; error message comes back like 'Column "ZID" not found; SQL statement: ... [error-code]' sometimes
