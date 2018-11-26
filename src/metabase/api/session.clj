@@ -80,6 +80,7 @@
       {:id (create-session! user)}
       (when-let [user (db/select-one [User :id :password_salt :password :last_login], :email username, :is_active true)]
         (when (pass/verify-password password (:password_salt user) (:password user))
+              {:id (create-session! user)})))))
 
 (def ^:private throttling-disabled? (config/config-bool :mb-disable-session-throttle))
 
