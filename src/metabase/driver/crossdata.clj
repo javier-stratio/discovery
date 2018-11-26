@@ -22,7 +22,9 @@
             [metabase.driver.generic-sql.util.unprepare :as unprepare]
             [metabase.util.honeysql-extensions :as hx])
   (:import java.util.UUID
-           (java.util Collections Date)))
+           (java.util Collections Date))
+  (:import java.util.TimeZone
+           org.joda.time.DateTimeZone))
 
 (defrecord CrossdataDriver []
   clojure.lang.Named
