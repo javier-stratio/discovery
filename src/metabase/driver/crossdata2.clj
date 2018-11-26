@@ -109,7 +109,7 @@
       (qprocessor/do-with-try-catch
         (fn []
           (let [db-connection (sql/db->jdbc-connection-spec database)]
-            (qprocessor/do-in-transaction db-connection (partial qprocessor/run-query-with-out-remark query))))))))
+            (qprocessor/do-in-transaction db-connection (partial qprocessor/run-query query))))))))
 
 (defn apply-order-by
   "Apply `order-by` clause to HONEYSQL-FORM. Default implementation of `apply-order-by` for SQL drivers."
