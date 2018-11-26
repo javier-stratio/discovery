@@ -22,10 +22,7 @@
             [metabase.util.honeysql-extensions :as hx]
             [toucan.db :as db])
   (:import java.util.UUID
-           (java.util Collections Date)
-           (metabase.query_processor.interface DateTimeValue Value)
-           (metabase.query_processor.interface DateTimeValue)
-           metabase.query_processor.interface.Field))
+           (java.util Collections Date)))
 
 (defrecord CrossdataDriver []
   clojure.lang.Named

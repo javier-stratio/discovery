@@ -22,10 +22,7 @@
             [metabase.driver.generic-sql.util.unprepare :as unprepare]
             [metabase.util.honeysql-extensions :as hx])
   (:import java.util.UUID
-           (java.util Collections Date)
-           (metabase.query_processor.interface DateTimeValue Value)
-           (metabase.query_processor.interface DateTimeValue)
-           metabase.query_processor.interface.Field))
+           (java.util Collections Date)))
 
 (defrecord CrossdataDriver []
   clojure.lang.Named
