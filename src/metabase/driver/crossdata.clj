@@ -21,8 +21,6 @@
                       types)
             [metabase.driver.generic-sql.util.unprepare :as unprepare]
             [metabase.util.honeysql-extensions :as hx])
-  (:import java.util.TimeZone
-           org.joda.time.DateTimeZone)
   (:import java.util.UUID
            (java.util Collections Date)
            (metabase.query_processor.interface DateTimeValue Value)
