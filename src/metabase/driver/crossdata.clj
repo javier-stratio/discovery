@@ -25,6 +25,8 @@
            org.joda.time.DateTimeZone)
   (:import java.util.UUID
            (java.util Collections Date)
+           (metabase.query_processor.interface DateTimeValue Value)
+           (metabase.query_processor.interface DateTimeValue)
            metabase.query_processor.interface.Field))
 
 (defrecord CrossdataDriver []
