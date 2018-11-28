@@ -451,6 +451,20 @@
         (update honeysql-form :select #(if (seq %) % [:*]))))))
 
 
+;(defn- apply-clauses
+;  "Loop through all the `clause->handler` entries; if the query contains a given clause, apply the handler fn."
+;  [driver honeysql-form query]
+;  (loop [honeysql-form honeysql-form, [clause f & more] (seq clause-handlers)]
+;    (let [honeysql-form (if (clause query)
+;                          (f driver honeysql-form query)
+;                          honeysql-form)]
+;      (if (seq more)
+;        (recur honeysql-form more)
+;        ;; ok, we're done; if no `:select` clause was specified (for whatever reason) put a default (`SELECT *`) one
+;        ;; in
+;        (update honeysql-form :select #(if (seq %) % [:*]))))))
+
+
 ;;; -------------------------------------------- Handling source queries ---------------------------------------------
 
 (declare apply-clauses)
@@ -689,7 +703,7 @@
   (try (f)
        (finally (.rollback (jdbc/get-connection conn)))))
 
-(defn- do-in-transaction [connection f]
+(defn do-in-transaction [connection f]
   (jdbc/with-db-transaction [transaction-connection connection]
     (do-with-auto-commit-disabled transaction-connection (partial f transaction-connection))))
 
@@ -729,11 +743,11 @@
 
 (defn execute-query
   "Process and run a native (raw SQL) QUERY."
-  [driver {settings :settings, query :native, :as outer-query}]
+  [driver {:keys [database settings], query :native, :as outer-query}]
   (let [query (assoc query :remark (qputil/query->remark outer-query))]
     (do-with-try-catch
       (fn []
-        (let [db-connection (sql/db->jdbc-connection-spec (qp.store/database))]
+        (let [db-connection (sql/db->jdbc-connection-spec database)]
           ((if (seq (:report-timezone settings))
              run-query-with-timezone
              run-query-without-timezone) driver settings db-connection query))))))
