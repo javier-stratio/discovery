@@ -17,7 +17,6 @@
              [field :refer [Field]]
              [table :refer [Table]]]
             [metabase.query-processor
-             [annotate :as annotate]
              [interface :as i]
              [store :as qp.store]
              [util :as qputil]]
@@ -28,9 +27,7 @@
              [i18n :refer [tru]]]
             [schema.core :as s])
   (:import [java.sql PreparedStatement ResultSet ResultSetMetaData SQLException]
-           [java.util Calendar Date TimeZone]
-           [metabase.query_processor.interface AgFieldRef BinnedField DateTimeField DateTimeValue Expression
-            ExpressionRef Field FieldLiteral JoinQuery JoinTable RelativeDateTimeValue TimeField TimeValue Value]))
+           [java.util Calendar Date TimeZone]))
 
 ;; TODO - yet another `*query*` dynamic var. We should really consolidate them all so we only need a single one.
 (def ^:dynamic *query*
@@ -60,7 +57,7 @@
                       "name or object class making this easy to override in any places needed for a given driver.")
             :arglists     '([driver x])
             :style/indent 1}
-          ->honeysql
+  ->honeysql
   (fn [driver x]
     [(class driver) (mbql.u/dispatch-by-clause-name-or-class x)]))
 
@@ -101,14 +98,14 @@
   ;; other `->honeysql` impls (e.g. the `(class Field` one) will do the correct thing automatically without having to
   ;; worry about the context in which they are being called
   (qp.store/with-pushed-store
-   (when-let [{:keys [join-alias table-id]} (mbql.u/fk-clause->join-info *query* *nested-query-level* fk-clause)]
-     (when table-id
-       (qp.store/store-table! (assoc (qp.store/table table-id)
-                                     :schema nil
-                                     :name   join-alias
-                                     ;; for drivers that need to know these things, like Snowflake
-                                     :alias? true))))
-   (->honeysql driver dest-field-clause)))
+    (when-let [{:keys [join-alias table-id]} (mbql.u/fk-clause->join-info *query* *nested-query-level* fk-clause)]
+      (when table-id
+        (qp.store/store-table! (assoc (qp.store/table table-id)
+                                 :schema nil
+                                 :name   join-alias
+                                 ;; for drivers that need to know these things, like Snowflake
+                                 :alias? true))))
+    (->honeysql driver dest-field-clause)))
 
 (defmethod ->honeysql [Object :field-literal]
   [driver [_ field-name]]
@@ -163,8 +160,8 @@
                                     arg)))]
     (apply hsql/call :/ (first args) (for [arg (rest args)]
                                        (hsql/call :case
-                                                  (hsql/call := arg 0) nil
-                                                  :else                arg)))))
+                                         (hsql/call := arg 0) nil
+                                         :else                arg)))))
 
 (defmethod ->honeysql [Object :named] [driver [_ ag ag-name]]
   (->honeysql driver ag))
@@ -272,10 +269,10 @@
   "Apply a `breakout` clause to HONEYSQL-FORM. Default implementation of `apply-breakout` for SQL drivers."
   [driver honeysql-form {breakout-fields :breakout, fields-fields :fields :as query}]
   (as-> honeysql-form new-hsql
-        (apply h/merge-select new-hsql (for [field-clause breakout-fields
-                                             :when        (not (contains? (set fields-fields) field-clause))]
-                                         (as driver field-clause)))
-        (apply h/group new-hsql (map (partial ->honeysql driver) breakout-fields))))
+    (apply h/merge-select new-hsql (for [field-clause breakout-fields
+                                         :when        (not (contains? (set fields-fields) field-clause))]
+                                     (as driver field-clause)))
+    (apply h/group new-hsql (map (partial ->honeysql driver) breakout-fields))))
 
 (defn apply-fields
   "Apply a `fields` clause to HONEYSQL-FORM. Default implementation of `apply-fields` for SQL drivers."
@@ -472,11 +469,11 @@
   source queries are aliased as `source`."
   [driver honeysql-form {{:keys [native], :as source-query} :source-query}]
   (assoc honeysql-form
-         :from [[(if native
-                   (hsql/raw (str "(" (str/replace native #";+\s*$" "") ")")) ; strip off any trailing slashes
-                   (binding [*nested-query-level* (inc *nested-query-level*)]
-                     (apply-clauses driver {} source-query)))
-                 source-query-alias]]))
+    :from [[(if native
+              (hsql/raw (str "(" (str/replace native #";+\s*$" "") ")")) ; strip off any trailing slashes
+              (binding [*nested-query-level* (inc *nested-query-level*)]
+                (apply-clauses driver {} source-query)))
+            source-query-alias]]))
 
 (defn- apply-clauses-with-aliased-source-query-table
   "For queries that have a source query that is a normal MBQL query with a source table, temporarily swap the name of
@@ -484,13 +481,13 @@
   referring to Fields belonging to the Table in the source query work normally."
   [driver honeysql-form {:keys [source-query], :as inner-query}]
   (qp.store/with-pushed-store
-   (when-let [source-table-id (:source-table source-query)]
-     (qp.store/store-table! (assoc (qp.store/table source-table-id)
-                                   :schema nil
-                                   :name   (name source-query-alias)
-                                   ;; some drivers like Snowflake need to know this so they don't include Database name
-                                   :alias? true)))
-   (apply-top-level-clauses driver honeysql-form (dissoc inner-query :source-query))))
+    (when-let [source-table-id (:source-table source-query)]
+      (qp.store/store-table! (assoc (qp.store/table source-table-id)
+                               :schema nil
+                               :name   (name source-query-alias)
+                               ;; some drivers like Snowflake need to know this so they don't include Database name
+                               :alias? true)))
+    (apply-top-level-clauses driver honeysql-form (dissoc inner-query :source-query))))
 
 
 ;;; -------------------------------------------- putting it all togetrher --------------------------------------------
@@ -511,8 +508,8 @@
   [driverr {inner-query :query}]
   {:pre [(map? inner-query)]}
   (u/prog1 (apply-clauses driverr {} inner-query)
-           (when-not i/*disable-qp-logging*
-             (log/debug (tru "HoneySQL Form:") (u/emoji "🍯") "\n" (u/pprint-to-str 'cyan <>)))))
+    (when-not i/*disable-qp-logging*
+      (log/debug (tru "HoneySQL Form:") (u/emoji "🍯") "\n" (u/pprint-to-str 'cyan <>)))))
 
 
 ;;; +----------------------------------------------------------------------------------------------------------------+
@@ -614,30 +611,30 @@
   new one. This macro checks to see if one is open, or will open a new one. Will bind the connection to `conn-sym`."
   [conn-sym db & body]
   `(let [db# ~db]
-    (if-let [~conn-sym (jdbc/db-find-connection db#)]
-      (do ~@body)
-      (with-open [~conn-sym (jdbc/get-connection db#)]
-        ~@body))))
+     (if-let [~conn-sym (jdbc/db-find-connection db#)]
+       (do ~@body)
+       (with-open [~conn-sym (jdbc/get-connection db#)]
+         ~@body))))
 
 (defn- cancellable-run-query
   "Runs `sql` in such a way that it can be interrupted via a `future-cancel`"
   [db sql params opts]
   (with-ensured-connection conn db
-                           ;; This is normally done for us by java.jdbc as a result of our `jdbc/query` call
-                           (with-open [^PreparedStatement stmt (jdbc/prepare-statement conn sql opts)]
-                             ;; Need to run the query in another thread so that this thread can cancel it if need be
-                             (try
-                               (let [query-future (future (jdbc/query conn (into [stmt] params) opts))]
-                                 ;; This thread is interruptable because it's awaiting the other thread (the one actually running the
-                                 ;; query). Interrupting this thread means that the client has disconnected (or we're shutting down) and so
-                                 ;; we can give up on the query running in the future
-                                 @query-future)
-                               (catch InterruptedException e
-                                 (log/warn e (tru "Client closed connection, cancelling query"))
-                                 ;; This is what does the real work of cancelling the query. We aren't checking the result of
-                                 ;; `query-future` but this will cause an exception to be thrown, saying the query has been cancelled.
-                                 (.cancel stmt)
-                                 (throw e))))))
+    ;; This is normally done for us by java.jdbc as a result of our `jdbc/query` call
+    (with-open [^PreparedStatement stmt (jdbc/prepare-statement conn sql opts)]
+      ;; Need to run the query in another thread so that this thread can cancel it if need be
+      (try
+        (let [query-future (future (jdbc/query conn (into [stmt] params) opts))]
+          ;; This thread is interruptable because it's awaiting the other thread (the one actually running the
+          ;; query). Interrupting this thread means that the client has disconnected (or we're shutting down) and so
+          ;; we can give up on the query running in the future
+          @query-future)
+        (catch InterruptedException e
+          (log/warn e (tru "Client closed connection, cancelling query"))
+          ;; This is what does the real work of cancelling the query. We aren't checking the result of
+          ;; `query-future` but this will cause an exception to be thrown, saying the query has been cancelled.
+          (.cancel stmt)
+          (throw e))))))
 
 (defn- run-query
   "Run the query itself."
@@ -674,9 +671,9 @@
   {:style/indent 0}
   [f]
   (try (f)
-    (catch SQLException e
-      (log/error (jdbc/print-sql-exception-chain e))
-      (throw (Exception. (exception->nice-error-message e))))))
+       (catch SQLException e
+         (log/error (jdbc/print-sql-exception-chain e))
+         (throw (Exception. (exception->nice-error-message e))))))
 
 (defn- do-with-auto-commit-disabled
   "Disable auto-commit for this transaction, and make the transaction `rollback-only`, which means when the
@@ -690,11 +687,11 @@
   ;; TODO - it would be nice if we could also `.setReadOnly` on the transaction as well, but that breaks setting the
   ;; timezone. Is there some way we can have our cake and eat it too?
   (try (f)
-    (finally (.rollback (jdbc/get-connection conn)))))
+       (finally (.rollback (jdbc/get-connection conn)))))
 
-(defn do-in-transaction [connection f]
+(defn- do-in-transaction [connection f]
   (jdbc/with-db-transaction [transaction-connection connection]
-                            (do-with-auto-commit-disabled transaction-connection (partial f transaction-connection))))
+    (do-with-auto-commit-disabled transaction-connection (partial f transaction-connection))))
 
 
 ;;; ---------------------------------------------- Running w/ Timezone -----------------------------------------------
@@ -703,7 +700,7 @@
   "Set the timezone for the current connection."
   [driver settings connection]
   (let [timezone      (u/prog1 (:report-timezone settings)
-                               (assert (re-matches #"[A-Za-z\/_]+" <>)))
+                        (assert (re-matches #"[A-Za-z\/_]+" <>)))
         format-string (sql/set-timezone-sql driver)
         sql           (format format-string (str \' timezone \'))]
     (log/debug (u/format-color 'green (tru "Setting timezone with statement: {0}" sql)))
@@ -735,8 +732,8 @@
   [driver {settings :settings, query :native, :as outer-query}]
   (let [query (assoc query :remark (qputil/query->remark outer-query))]
     (do-with-try-catch
-     (fn []
-       (let [db-connection (sql/db->jdbc-connection-spec (qp.store/database))]
-         ((if (seq (:report-timezone settings))
-            run-query-with-timezone
-            run-query-without-timezone) driver settings db-connection query))))))
+      (fn []
+        (let [db-connection (sql/db->jdbc-connection-spec (qp.store/database))]
+          ((if (seq (:report-timezone settings))
+             run-query-with-timezone
+             run-query-without-timezone) driver settings db-connection query))))))
