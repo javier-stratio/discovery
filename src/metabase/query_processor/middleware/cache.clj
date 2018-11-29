@@ -132,3 +132,8 @@
         (when-not @backend-instance
           (set-backend!))
         (run-query-with-cache qp query)))))
+
+"romartin-- para poder cachear desde la primera vez..."
+(defn- first-query-and-save-results-if-successful! [qp query]
+  (let [query-hash (qputil/query-hash query)]
+    (run-query-and-save-results-if-successful! query-hash qp query)))
