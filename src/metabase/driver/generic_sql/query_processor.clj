@@ -642,6 +642,15 @@
     {:rows    (or rows [])
      :columns (map u/keyword->qualified-name columns)}))
 
+(defn run-query-with-out-remark
+  "Run the query itself."
+  [{sql :query, params :params, remark :remark} connection]
+  (let [sql (str (hx/unescape-dots sql))
+        ;;(let [sql (hx/unescape-dots sql)
+        statement (into [sql] params)
+        [columns & rows] (jdbc/query connection statement {:identifiers identity, :as-arrays? true})]
+    {:rows    (or rows [])
+     :columns columns}))
 
 ;;; -------------------------- Running queries: exception handling & disabling auto-commit ---------------------------
 
