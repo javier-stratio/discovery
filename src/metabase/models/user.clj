@@ -13,8 +13,8 @@
              [permissions-group-membership :as perm-membership :refer [PermissionsGroupMembership]]]
             [metabase.util
              [date :as du]
+             [i18n :refer [tru]]
              [schema :as su]]
-            [puppetlabs.i18n.core :refer [tru]]
             [schema.core :as s]
             [toucan
              [db :as db]
@@ -181,7 +181,7 @@
 
 (s/defn create-new-google-auth-user!
   "Convenience for creating a new user via Google Auth. This account is considered active immediately; thus all active
-  admins will recieve an email right away."
+  admins will receive an email right away."
   [new-user :- NewUser]
   (u/prog1 (insert-new-user! (assoc new-user :google_auth true))
     ;; send an email to everyone including the site admin if that's set
@@ -189,41 +189,12 @@
 
 (s/defn create-new-ldap-auth-user!
   "Convenience for creating a new user via LDAP. This account is considered active immediately; thus all active admins
-  will recieve an email right away."
+  will receive an email right away."
   [new-user :- NewUser]
   (insert-new-user! (-> new-user
                         ;; We should not store LDAP passwords
                         (dissoc :password)
                         (assoc :ldap_auth true))))
-
-(defn- reactivate-user! [existing-user first-name last-name]
-  (when-not (:is_active existing-user)
-            (db/update! User (u/get-id existing-user)
-                        :first_name    first-name
-                        :last_name     last-name
-                        :is_active     true
-                        :is_superuser  false
-                        ;; if the user orignally logged in via Google Auth and it's no longer enabled, convert them into a regular user
-                        ;; (see Issue #3323)
-                        :google_auth   false
-                        :ldap_auth     false))
-  ;; now return the existing user whether they were originally active or not
-  (User (u/get-id existing-user)))
-
-(defn create-new-header-auth-user!
-  "Convenience for creating a new user via LDAP. This account is considered active immediately; thus all active admins
-  will recieve an email right away."
-  [first-name last-name email-address is_superuser]
-  {:pre [(string? first-name) (string? last-name) (u/email? email-address)]}
-  (if-let [existing-user (db/select-one [User :id :is_active :google_auth], :email email-address)]
-    ;; this user already exists but is inactive, so simply reactivate the account
-    (reactivate-user! existing-user first-name last-name)
-    ;; new user account, so create it
-    (db/insert! User :email      email-address
-                :first_name first-name
-                :last_name  last-name
-                :password   (str (UUID/randomUUID))
-                :is_superuser is_superuser)))
 
 (defn set-password!
   "Updates the stored password for a specified `User` by hashing the password with a random salt."

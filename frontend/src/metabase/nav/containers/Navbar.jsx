@@ -30,8 +30,6 @@ import ProfileLink from "metabase/nav/components/ProfileLink.jsx";
 import { getPath, getContext, getUser } from "../selectors";
 import { entityListLoader } from "metabase/entities/containers/EntityListLoader";
 
-import RetinaImage from "react-retina-image";
-
 const mapStateToProps = (state, props) => ({
   path: getPath(state, props),
   context: getContext(state, props),
@@ -221,6 +219,11 @@ export default class Navbar extends Component {
             <AdminNavItem
               name={t`Permissions`}
               path="/admin/permissions"
+              currentPath={this.props.path}
+            />
+            <AdminNavItem
+              name={t`Troubleshooting`}
+              path="/admin/troubleshooting"
               currentPath={this.props.path}
             />
           </ul>

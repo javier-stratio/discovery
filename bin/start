@@ -11,21 +11,6 @@ if [ "$PORT" ]; then
     export MB_JETTY_PORT="$PORT"
 fi
 
-source /root/kms/secrets.sh
-
-
-export VAR_SSL_Keystore_Password=`cat /root/.crossdata/keyStore`
-export VAR_SSL_Truststore_Password=`cat /root/.crossdata/trustStore`
-
-export MB_JETTY_SSL="true"
-export MB_JETTY_SSL_Port="$PORT1"
-export MB_JETTY_SSL_Keystore="/root/.crossdata/keyStore.jks"
-export MB_JETTY_SSL_Keystore_Password="$VAR_SSL_Keystore_Password"
-export MB_JETTY_SSL_Truststore="/root/.crossdata/trustStore.jks"
-export MB_JETTY_SSL_Truststore_Password="$VAR_SSL_Truststore_Password"
-
-export HTTP_CLIENT="curl --insecure -f -L -o"
-
 # Heroku Postgres
 if [ "$DATABASE_URL" ]; then
     if [[ $string == *"?"* ]]; then
@@ -133,16 +118,6 @@ JAVA_OPTS="$JAVA_OPTS -XX:+IgnoreUnrecognizedVMOptions" # Don't barf if we see a
 JAVA_OPTS="$JAVA_OPTS -Djava.awt.headless=true"         # don't try to start AWT. Not sure this does anything but better safe than wasting memory
 JAVA_OPTS="$JAVA_OPTS -Dfile.encoding=UTF-8"            # Use UTF-8
 JAVA_OPTS="$JAVA_OPTS --add-modules=java.xml.bind"      # Enable access to java.xml.bind module (Java 9)
-
-# Heap Size (defaults to 1g min, 95% of the given memory as max)
-CURRENT_MEMORY=$MARATHON_APP_RESOURCE_MEM
-PERCENTAGE=0.95
-MAX_HEAP=$(awk '{printf("%.0f\n", $1*$2)}' <<<"$PERCENTAGE $CURRENT_MEMORY")m
-#JAVA_OPTS="$JAVA_OPTS -Xmx$MAX_HEAP -Xms$MAX_HEAP"
-
-if [ "$JMX" ]; then
-    JAVA_OPTS="$JAVA_OPTS $JMX"
-fi
 
 echo "Using these JAVA_OPTS: ${JAVA_OPTS}"
 

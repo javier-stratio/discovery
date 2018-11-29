@@ -142,7 +142,7 @@ export default class DatabaseSchedulingForm extends Component {
                           schedule_type: "daily",
                         }
                   }
-                  scheduleOptions={["15minutes","30minutes","hourly", "daily"]}
+                  scheduleOptions={["hourly", "daily"]}
                   onScheduleChange={this.updateSchemaSyncSchedule}
                   textBeforeInterval={t`Scan`}
                 />
