@@ -2,7 +2,7 @@
 
 ## 0.32.0 (upcoming)
 
-* Pending changelog
+* [DGPB-1617] Upgrade to metabase 0.31.1
 
 ## 0.31.0 (October 08, 2018)
 
