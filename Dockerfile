@@ -15,12 +15,14 @@ ENV LC_CTYPE en_US.UTF-8
 # yarn:  frontend building
 # make:    backend building
 # gettext: translations
+
 RUN apk add --update bash yarn git wget make gettext
 
 ADD . /app/source
 
 # import Crossdata and defaultSecrets
 RUN mkdir /root/.crossdata/ && \
+    npm install -g yarn && \
     mkdir /root/defaultsecrets/ && \
     mv /app/source/resources/security/* /root/defaultsecrets/. && \
     mkdir /root/kms/ && \
@@ -84,8 +86,6 @@ RUN keytool -noprompt -import -trustcacerts -alias aws-rds \
 # ###################
 
 FROM java:openjdk-8-jre-alpine as runner
-
-WORKDIR /app
 
 ENV FC_LANG en-US
 ENV LC_CTYPE en_US.UTF-8
