@@ -17,7 +17,10 @@ ENV LC_CTYPE en_US.UTF-8
 # gettext: translations
 
 # dependencies
-RUN apk add --update bash ttf-dejavu fontconfig && \
+RUN apk update && \
+    apk add --update nodejs  && \
+    npm install newman --global
+    apk add --update bash ttf-dejavu fontconfig && \
     apk add --update curl && \
     apk add --update jq && \
     apk add --update npm && \
