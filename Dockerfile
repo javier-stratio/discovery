@@ -18,7 +18,6 @@ ENV LC_CTYPE en_US.UTF-8
 
 # dependencies
 RUN apk add --update bash ttf-dejavu fontconfig && \
-    apk add --update yarn && \
     apk add --update curl && \
     apk add --update jq && \
     apk add --update npm && \
