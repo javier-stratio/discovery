@@ -16,9 +16,6 @@ ENV LC_CTYPE en_US.UTF-8
 # make:    backend building
 # gettext: translations
 
-RUN apk add --update bash yarn git wget make gettext
-
-ADD . /app/source
 
 # import Crossdata and defaultSecrets
 RUN mkdir /root/.crossdata/ && \
@@ -27,6 +24,10 @@ RUN mkdir /root/.crossdata/ && \
     mv /app/source/resources/security/* /root/defaultsecrets/. && \
     mkdir /root/kms/ && \
     mv  /app/source/resources/kms/* /root/kms/.
+
+RUN apk add --update bash yarn git wget make gettext
+
+ADD . /app/source
 
 ENV MAVEN_VERSION="3.2.5" \
     M2_HOME=/usr/lib/mvn
