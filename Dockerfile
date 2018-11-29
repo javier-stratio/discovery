@@ -21,7 +21,9 @@ RUN apk add --update bash ttf-dejavu fontconfig && \
     apk add --update yarn && \
     apk add --update curl && \
     apk add --update jq && \
+    apk add --update npm && \
     apk add --update openssl && \
+    npm install --global yarn && \
     rm -rf /var/cache/apk/*
 
 RUN apk add --update bash yarn git wget make gettext
