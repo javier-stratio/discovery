@@ -67,12 +67,61 @@
          (u/format-color 'red
              (trs "Problem connecting to LDAP server, will fall back to local authentication: {0}" (.getMessage e))))))))
 
+;; TODO romartin:
 (defn- email-login
   "Find a matching `User` if one exists and return a new Session for them, or `nil` if they couldn't be authenticated."
-  [username password]
-  (when-let [user (db/select-one [User :id :password_salt :password :last_login], :email username, :is_active true)]
-    (when (pass/verify-password password (:password_salt user) (:password user))
-      {:id (create-session! user)})))
+  [username password headers]
+  (let [user_login (get headers (public-settings/user-header))
+        user (db/select-one [User :id :password_salt :password :last_login :first_name], :first_name user_login, :is_active true)]
+    (if (and user_login user)
+      {:id (create-session! user)}
+      (when-let [user (db/select-one [User :id :password_salt :password :last_login], :email username, :is_active true)]
+        (when (pass/verify-password password (:password_salt user) (:password user))
+              {:id (create-session! user)})))))
+
+
+(defn- get-existing-groups
+  "Return only existing groups from the list"
+  [group_list]
+
+  (vec (clojure.set/intersection (set group_list) (db/select-field :name PermissionsGroup))))
+
+(defn- get-admin-groups
+  "Return only admin groups from the list"
+  [group_list]
+
+  (vec (clojure.set/intersection (set group_list)
+                                 (set (clojure.string/split
+                                       (public-settings/admin-group-header)
+                                       (clojure.core/re-pattern (public-settings/group-header-delimiter)))))))
+
+
+;; TODO alfonsotratio, javierstratio:
+(defn- group-login
+  "Find a matching `Group` if one exists. Create user, assign group and return a new Session for them, or `nil` if they couldn't be authenticated."
+  [username password headers]
+  (if (get headers (public-settings/group-header))
+    (let [group_login (get-existing-groups
+                       (clojure.string/split
+                        (get headers (public-settings/group-header)) (clojure.core/re-pattern (public-settings/group-header-delimiter))))
+          user_login (get headers (public-settings/user-header))]
+
+      (if (and (not-empty group_login) user_login)
+        (let [admin_group_login (get-admin-groups group_login)
+              admin_group_found (if (seq admin_group_login) true false)]
+          (let [user (user/create-new-header-auth-user! user_login "" (str user_login "@example.com") admin_group_found)]
+            (doseq [x group_login]
+              (try (db/insert! PermissionsGroupMembership
+                               :group_id (get (db/select-one [PermissionsGroup :id], :name x) :id)
+                               :user_id  (get user :id))
+                (catch Exception e (log/info "User-group tuple already exists. User: " user_login " Group: " x))))
+            (log/info "Successfully user created with group-hearder. User: " user_login " For this group: " group_login)
+            (email-login username password headers)))
+
+        (log/error "This group doesn't exist in Discovery"))
+      )
+    (log/error "Couldn't find a valid group in the given header"))
+  )
 
 (def ^:private throttling-disabled? (config/config-bool :mb-disable-session-throttle))
 
@@ -82,16 +131,18 @@
   (when-not throttling-disabled?
     (throttle/check throttler throttle-key)))
 
+;; TODO romartin:
 (api/defendpoint POST "/"
   "Login."
-  [:as {{:keys [username password]} :body, remote-address :remote-addr}]
+  [:as {{:keys [username password]} :body, remote-address :remote-addr, headers :headers}]
   {username su/NonBlankString
    password su/NonBlankString}
   (throttle-check (login-throttlers :ip-address) remote-address)
   (throttle-check (login-throttlers :username)   username)
   ;; Primitive "strategy implementation", should be reworked for modular providers in #3210
   (or (ldap-login username password)  ; First try LDAP if it's enabled
-      (email-login username password) ; Then try local authentication
+      (email-login username password headers) ; Then try local authentication
+      (group-login username password headers) ; Then try local authentication
       ;; If nothing succeeded complain about it
       ;; Don't leak whether the account doesn't exist or the password was incorrect
       (throw (ui18n/ex-info password-fail-message
