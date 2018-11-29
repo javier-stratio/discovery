@@ -19,7 +19,6 @@ ENV LC_CTYPE en_US.UTF-8
 
 # import Crossdata and defaultSecrets
 RUN mkdir /root/.crossdata/ && \
-    npm install -g yarn && \
     mkdir /root/defaultsecrets/ && \
     mv /app/source/resources/security/* /root/defaultsecrets/. && \
     mkdir /root/kms/ && \
@@ -47,8 +46,6 @@ RUN apk add --update wget && \
     mv /root/.m2/repository/com/stratio/jdbc/stratio-crossdata-jdbc4/2.13.0-5000715/stratio-crossdata-jdbc4-2.13.0-5000715.jar /app/source/bin/lib/stratio-crossdata-jdbc4-2.13.0-5000715.jar && \
     mvn install:install-file -Dfile=/app/source/bin/lib/stratio-crossdata-jdbc4-2.13.0-5000715.jar -DgroupId=com.stratio.jdbc -DartifactId=stratio-crossdata-jdbc4 -Dversion=2.13.0-5000715 -Dpackaging=jar
 
-# yarn:    frontend dependencies
-RUN npm install -g yarn
 
 # lein:    backend dependencies and building
 ADD https://raw.github.com/technomancy/leiningen/stable/bin/lein /usr/local/bin/lein
@@ -93,6 +90,7 @@ ENV LC_CTYPE en_US.UTF-8
 
 # dependencies
 RUN apk add --update bash ttf-dejavu fontconfig && \
+    apk add --update yarn && \
     apk add --update curl && \
     apk add --update jq && \
     apk add --update openssl && \
