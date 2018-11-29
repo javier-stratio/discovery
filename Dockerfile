@@ -18,8 +18,8 @@ ENV LC_CTYPE en_US.UTF-8
 
 # dependencies
 RUN apk update && \
-    apk add --update nodejs  && \
-    npm install newman --global
+    apk add --update nodejs && \
+    npm install newman --global && \
     apk add --update bash ttf-dejavu fontconfig && \
     apk add --update curl && \
     apk add --update jq && \
