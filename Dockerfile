@@ -15,6 +15,15 @@ ENV LC_CTYPE en_US.UTF-8
 # yarn:  frontend building
 # make:    backend building
 # gettext: translations
+
+# dependencies
+RUN apk add --update bash ttf-dejavu fontconfig && \
+    apk add --update yarn && \
+    apk add --update curl && \
+    apk add --update jq && \
+    apk add --update openssl && \
+    rm -rf /var/cache/apk/*
+
 RUN apk add --update bash yarn git wget make gettext
 
 ADD . /app/source
@@ -85,14 +94,6 @@ FROM java:openjdk-8-jre-alpine as runner
 
 ENV FC_LANG en-US
 ENV LC_CTYPE en_US.UTF-8
-
-# dependencies
-RUN apk add --update bash ttf-dejavu fontconfig && \
-    apk add --update yarn && \
-    apk add --update curl && \
-    apk add --update jq && \
-    apk add --update openssl && \
-    rm -rf /var/cache/apk/*
 
 # add fixed cacerts
 COPY --from=builder /etc/ssl/certs/java/cacerts /usr/lib/jvm/default-jvm/jre/lib/security/cacerts
