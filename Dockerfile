@@ -2,7 +2,7 @@
 # STAGE 1: builder
 ###################
 
-FROM java:openjdk-8-jdk-alpine as builder
+FROM openjdk:8-jdk-alpine as builder
 
 WORKDIR /app/source
 
@@ -16,18 +16,8 @@ ENV LC_CTYPE en_US.UTF-8
 # make:     backend building
 # gettext:  translations
 
-# dependencies
-RUN apk update && \
-    apk add --update nodejs && \
-    apk add --update bash ttf-dejavu fontconfig && \
-    apk add --update curl && \
-    apk add --update jq && \
-    apk add --update npm && \
-    apk add --update openssl && \
-    npm install --global yarn && \
+RUN apk add --update bash yarn git wget make gettext curl jq openssl && \
     rm -rf /var/cache/apk/*
-
-RUN apk add --update bash yarn git wget make gettext
 
 ADD . /app/source
 
@@ -93,7 +83,7 @@ RUN keytool -noprompt -import -trustcacerts -alias aws-rds \
 # # STAGE 2: runner
 # ###################
 
-FROM java:openjdk-8-jre-alpine as runner
+FROM openjdk:8-jre-alpine as runner
 
 ENV FC_LANG en-US
 ENV LC_CTYPE en_US.UTF-8
