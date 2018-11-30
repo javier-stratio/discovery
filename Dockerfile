@@ -9,17 +9,16 @@ WORKDIR /app/source
 ENV FC_LANG en-US
 ENV LC_CTYPE en_US.UTF-8
 
-# bash:    various shell scripts
-# wget:    installing lein
-# git:     ./bin/version
-# yarn:  frontend building
-# make:    backend building
-# gettext: translations
+# bash:     various shell scripts
+# wget:     installing lein
+# git:      ./bin/version
+# yarn:     frontend building
+# make:     backend building
+# gettext:  translations
 
 # dependencies
 RUN apk update && \
     apk add --update nodejs && \
-    npm install newman --global && \
     apk add --update bash ttf-dejavu fontconfig && \
     apk add --update curl && \
     apk add --update jq && \
