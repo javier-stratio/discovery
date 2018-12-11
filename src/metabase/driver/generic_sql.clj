@@ -134,7 +134,7 @@
 (defn- create-connection-pool
   "Create a new C3P0 `ComboPooledDataSource` for connecting to the given DATABASE."
   [{:keys [id engine details]}]
-  (log/debug (u/format-color 'cyan "Creating new connection pool for database %d ..." id))
+  (log/info (u/format-color 'cyan "Creating new connection pool for database %d ..." id))
   (let [details-with-tunnel (ssh/include-ssh-tunnel details) ;; If the tunnel is disabled this returned unchanged
         spec (connection-details->spec (driver/engine->driver engine) details-with-tunnel)]
     (assoc (db/connection-pool (assoc spec
@@ -150,7 +150,8 @@
    the assumption that the connection details have changed."
   [_ {:keys [id]}]
   (when-let [pool (get @database-id->connection-pool id)]
-    (log/debug (u/format-color 'red "Closing connection pool for database %d ..." id))
+    (println "notify-database-updated:::: database params --> " _)
+    (log/info (u/format-color 'red "Closing connection pool for database %d ..." id))
     ;; remove the cached reference to the pool so we don't try to use it anymore
     (swap! database-id->connection-pool dissoc id)
     ;; now actively shut down the pool so that any open connections are closed
@@ -162,6 +163,11 @@
   "Return a JDBC connection spec that includes a cp30 `ComboPooledDataSource`.
    Theses connection pools are cached so we don't create multiple ones to the same DB."
   [{:keys [id], :as database}]
+  (println "db->pooled-connection-spec:::: database params --> " database)
+  (println "db->pooled-connection-spec:::: if true impersonate? --> " (true? (get-in database [:details :impersonate] )))
+  (println "db->pooled-connection-spec:::: @database-id->connection-pool --> " @database-id->connection-pool)
+  (if (true? (get-in database [:details :impersonate] ))
+    (notify-database-updated (get database :engine) database))
   (if (contains? @database-id->connection-pool id)
     ;; we have an existing pool for this database, so use it
     (get @database-id->connection-pool id)
