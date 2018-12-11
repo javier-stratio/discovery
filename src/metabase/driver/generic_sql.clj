@@ -163,7 +163,7 @@
   "Return a JDBC connection spec that includes a cp30 `ComboPooledDataSource`.
    Theses connection pools are cached so we don't create multiple ones to the same DB."
   [{:keys [id], :as database}]
-  (println "db->pooled-connection-spec:::: database params --> " database)
+  (println "db->pooled-connection-spec:::: database params_3 --> " database)
   (println "db->pooled-connection-spec:::: if true impersonate? --> " (true? (get-in database [:details :impersonate] )))
   (println "db->pooled-connection-spec:::: @database-id->connection-pool --> " @database-id->connection-pool)
   (if (true? (get-in database [:details :impersonate] ))
