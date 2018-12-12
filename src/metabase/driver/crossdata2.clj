@@ -116,7 +116,7 @@
                               (assoc-in database [:details :user] ((db/select-one [User :first_name], :id api/*current-user-id* , :is_active true) :first_name))
                               database))]
          (println "DB-Connection::::::::::::::::::::::>>>>>>>>>>>>>>>>>>>>" db-connection)
-         (qprocessor/run-query-with-out-remark driver settings db-connection query))))))
+         (qprocessor/run-query-without-timezone driver settings db-connection query))))))
 
 
 (defn apply-order-by
