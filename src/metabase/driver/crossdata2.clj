@@ -101,6 +101,12 @@
                      :database-type (:data_type result)
                      :base-type (hive-like/column->base-type (keyword (:data_type result)))}))}))
 
+(defn- do-in-transaction [connection f]
+  (jdbc/with-db-transaction [transaction-connection connection]
+                            (do-with-auto-commit-disabled transaction-connection (partial f transaction-connection))))
+
+(defn- run-query-without-timezone [_ _ connection query]
+  (do-in-transaction connection (partial run-query query nil)))
 
 (defn execute-query
   "Process and run a native (raw SQL) QUERY."
@@ -116,7 +122,7 @@
                               (assoc-in database [:details :user] ((db/select-one [User :first_name], :id api/*current-user-id* , :is_active true) :first_name))
                               database))]
          (println "DB-Connection::::::::::::::::::::::>>>>>>>>>>>>>>>>>>>>" db-connection)
-         (qprocessor/run-query-without-timezone driver settings db-connection query))))))
+         (run-query-without-timezone driver settings db-connection query))))))
 
 
 (defn apply-order-by
