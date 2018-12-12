@@ -110,22 +110,23 @@
 ;  (println "Execute-query:::: if true database --> "  (if (true? (get-in database [:details :impersonate] ))
 ;                                                        (assoc-in database [:details :user] ((db/select-one [User :first_name], :id api/*current-user-id* , :is_active true) :first_name))
 ;                                                        database))
-  (println "Execute-query:::: if true database ---------------------------------------------------------------------> ")
+  (println "Execute-query:::: If true database ---------------------------------------------------------------------> ")
 
   (let [sql (str
               (if (seq params)
                 (unprepare/unprepare (cons sql params))
                 sql))]
     (let [query (assoc query :remark  "", :query  sql, :params  nil)]
-      (qprocessor/do-with-try-catch
+;      (qprocessor/do-with-try-catch
         (fn []
           (let [db-connection (sql/db->jdbc-connection-spec
                                (if (true? (get-in database [:details :impersonate] ))
                                  (assoc-in database [:details :user] ((db/select-one [User :first_name], :id api/*current-user-id* , :is_active true) :first_name))
                                  database)) ]
-;            (println "Db-conection:::::" db-connection)
+            (println "Db-conection:::::" db-connection)
             (qprocessor/do-in-transaction db-connection (partial qprocessor/run-query-with-out-remark query))
-            ))))))
+            )))))
+;)
 
 (defn apply-order-by
   "Apply `order-by` clause to HONEYSQL-FORM. Default implementation of `apply-order-by` for SQL drivers."
