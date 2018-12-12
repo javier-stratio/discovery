@@ -104,12 +104,14 @@
 (defn execute-query
   "Process and run a native (raw SQL) QUERY."
   [driver {:keys [database settings ], query :native, {sql :query, params :params} :native, :as outer-query}]
-  (println "Execute-query:::: database params --> " database)
-  (println "Execute-query:::: database params_2 --> " (assoc-in database [:details :user] ((db/select-one [User :first_name], :id api/*current-user-id* , :is_active true) :first_name)))
-  (println "Execute-query:::: if true --> "  (true? (get-in database [:details :impersonate] )))
-  (println "Execute-query:::: if true database --> "  (if (true? (get-in database [:details :impersonate] ))
-                                                        (assoc-in database [:details :user] ((db/select-one [User :first_name], :id api/*current-user-id* , :is_active true) :first_name))
-                                                        database))
+;  (println "Execute-query:::: database params --> " database)
+;  (println "Execute-query:::: database params_2 --> " (assoc-in database [:details :user] ((db/select-one [User :first_name], :id api/*current-user-id* , :is_active true) :first_name)))
+;  (println "Execute-query:::: if true --> "  (true? (get-in database [:details :impersonate] )))
+;  (println "Execute-query:::: if true database --> "  (if (true? (get-in database [:details :impersonate] ))
+;                                                        (assoc-in database [:details :user] ((db/select-one [User :first_name], :id api/*current-user-id* , :is_active true) :first_name))
+;                                                        database))
+  (println "Execute-query:::: if true database ---------------------------------------------------------------------> ")
+
   (let [sql (str
               (if (seq params)
                 (unprepare/unprepare (cons sql params))
@@ -121,7 +123,7 @@
                                (if (true? (get-in database [:details :impersonate] ))
                                  (assoc-in database [:details :user] ((db/select-one [User :first_name], :id api/*current-user-id* , :is_active true) :first_name))
                                  database)) ]
-            (println "Db-conection:::::" db-connection)
+;            (println "Db-conection:::::" db-connection)
             (qprocessor/do-in-transaction db-connection (partial qprocessor/run-query-with-out-remark query))
             ))))))
 
