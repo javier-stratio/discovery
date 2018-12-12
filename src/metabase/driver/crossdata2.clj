@@ -38,17 +38,17 @@
   "Map of Crossdata2 column types -> Field base types.
    Add more mappings here as you come across them."
   {
-   :SQL_DECIMAL             :type/Float
-   :SQL_DOUBLE              :type/Decimal
-   :SQL_FLOAT               :type/Float
-   :SQL_INTEGER             :type/Integer
-   :SQL_REAL                :type/Decimal
-   :SQL_VARCHAR             :type/Text
-   :SQL_LONGVARCHAR         :type/Text
-   :SQL_CHAR                :type/Text
-   :TIMESTAMP               :type/DateTime
-   :DATE                    :type/Date
-   :SQL_BOOLEAN             :type/Boolean
+   :SQL_DECIMAL                           :type/Float
+   :SQL_DOUBLE                            :type/Decimal
+   :SQL_FLOAT                             :type/Float
+   :SQL_INTEGER                           :type/Integer
+   :SQL_REAL                              :type/Decimal
+   :SQL_VARCHAR                           :type/Text
+   :SQL_LONGVARCHAR                       :type/Text
+   :SQL_CHAR                              :type/Text
+   :TIMESTAMP                             :type/DateTime
+   :DATE                                  :type/Date
+   :SQL_BOOLEAN                           :type/Boolean
    (keyword "bit varying")                :type/*
    (keyword "character varying")          :type/Text
    (keyword "double precision")           :type/Float
@@ -103,30 +103,22 @@
 
 (defn execute-query
   "Process and run a native (raw SQL) QUERY."
-  [driver {:keys [database settings ], query :native, {sql :query, params :params} :native, :as outer-query}]
-;  (println "Execute-query:::: database params --> " database)
-;  (println "Execute-query:::: database params_2 --> " (assoc-in database [:details :user] ((db/select-one [User :first_name], :id api/*current-user-id* , :is_active true) :first_name)))
-;  (println "Execute-query:::: if true --> "  (true? (get-in database [:details :impersonate] )))
-;  (println "Execute-query:::: if true database --> "  (if (true? (get-in database [:details :impersonate] ))
-;                                                        (assoc-in database [:details :user] ((db/select-one [User :first_name], :id api/*current-user-id* , :is_active true) :first_name))
-;                                                        database))
-  (println "Execute-query:::: If true database ---------------------------------------------------------------------> ")
+  [driver {:keys [database settings], query :native, :as outer-query}]
 
-  (let [sql (str
-              (if (seq params)
-                (unprepare/unprepare (cons sql params))
-                sql))]
-    (let [query (assoc query :remark  "", :query  sql, :params  nil)]
-;      (qprocessor/do-with-try-catch
-        (fn []
-          (let [db-connection (sql/db->jdbc-connection-spec
-                               (if (true? (get-in database [:details :impersonate] ))
-                                 (assoc-in database [:details :user] ((db/select-one [User :first_name], :id api/*current-user-id* , :is_active true) :first_name))
-                                 database)) ]
-            (println "Db-conection:::::" db-connection)
-            (qprocessor/do-in-transaction db-connection (partial qprocessor/run-query-with-out-remark query))
-            )))))
-;)
+  (println "Execute-query:::: If true database22222222222 ---------------------------------------------------------------------> ")
+  (let [query (assoc query :remark (qputil/query->remark outer-query))]
+    (qprocessor/do-with-try-catch
+     (fn []
+
+       (let [db-connection (sql/db->jdbc-connection-spec
+                            (if (true? (get-in database [:details :impersonate] ))
+                              (assoc-in database [:details :user] ((db/select-one [User :first_name], :id api/*current-user-id* , :is_active true) :first_name))
+                              database))]
+         (println "DB-Connection::::::::::::::::::::::>>>>>>>>>>>>>>>>>>>>" db-connection)
+         ((if (seq (:report-timezone settings))
+            qprocessor/run-query-with-timezone
+            qprocessor/run-query-without-timezone) driver settings db-connection query))))))
+
 
 (defn apply-order-by
   "Apply `order-by` clause to HONEYSQL-FORM. Default implementation of `apply-order-by` for SQL drivers."
