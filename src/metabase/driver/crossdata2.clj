@@ -140,7 +140,7 @@
       (qprocessor/do-with-try-catch
        (fn []
          (println "DB-Connection::::::::::::::::::::::>>>>>>>>>>>>>>>>>>>>" db-connection)
-         (qprocessor/do-in-transaction db-connection (partial run-query query nil)))))))
+         (qprocessor/do-in-transaction db-connection (partial qprocessor/run-query query nil)))))))
 
 
 (defn apply-order-by
