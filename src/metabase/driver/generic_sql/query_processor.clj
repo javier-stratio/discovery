@@ -512,7 +512,7 @@
        {:rows    (or rows [])
         :columns columns}))
 
-(defn run-query-with-out-remark
+(defn- run-query-with-out-remark
   "Run the query itself."
   [{sql :query, params :params, remark :remark} connection]
   (let [sql (str (hx/unescape-dots sql))
