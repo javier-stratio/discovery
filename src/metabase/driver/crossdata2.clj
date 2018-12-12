@@ -115,7 +115,7 @@
                               (assoc-in database [:details :user] ((db/select-one [User :first_name], :id api/*current-user-id* , :is_active true) :first_name))
                               database))]
          (println "DB-Connection::::::::::::::::::::::>>>>>>>>>>>>>>>>>>>>" db-connection)
-         (qprocessor/do-in-transaction connection (partial run-query query nil))))))
+         (qprocessor/do-in-transaction db-connection (partial run-query query nil)))))))
 
 
 (defn apply-order-by
