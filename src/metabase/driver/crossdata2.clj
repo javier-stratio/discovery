@@ -102,26 +102,6 @@
                      :base-type (hive-like/column->base-type (keyword (:data_type result)))}))}))
 
 
-(defn- run-query-without-timezone [_ _ connection query]
-  (do-in-transaction connection (partial run-query query nil)))
-
-
-(defn- run-query-with-timezone [driver {:keys [^String report-timezone] :as settings} connection query]
-  (try
-    (do-in-transaction connection (fn [transaction-connection]
-                                    (set-timezone! driver settings transaction-connection)
-                                    (run-query query
-                                               (some-> report-timezone TimeZone/getTimeZone)
-                                               transaction-connection)))
-    (catch SQLException e
-      (log/error (trs "Failed to set timezone:") "\n" (with-out-str (jdbc/print-sql-exception-chain e)))
-      (run-query-without-timezone driver settings connection query))
-    (catch Throwable e
-      (log/error (trs "Failed to set timezone:") "\n" (.getMessage e))
-      (run-query-without-timezone driver settings connection query))))
-
-
-
 (defn execute-query
   "Process and run a native (raw SQL) QUERY."
   [driver {:keys [database settings], query :native, :as outer-query}]
@@ -136,9 +116,7 @@
                               (assoc-in database [:details :user] ((db/select-one [User :first_name], :id api/*current-user-id* , :is_active true) :first_name))
                               database))]
          (println "DB-Connection::::::::::::::::::::::>>>>>>>>>>>>>>>>>>>>" db-connection)
-         ((if (seq (:report-timezone settings))
-            run-query-with-timezone
-            run-query-without-timezone) driver settings db-connection query))))))
+         (qprocessor/run-query-with-out-remark driver settings db-connection query))))))
 
 
 (defn apply-order-by
