@@ -101,34 +101,6 @@
                      :database-type (:data_type result)
                      :base-type (hive-like/column->base-type (keyword (:data_type result)))}))}))
 
-; NEW ONE
-;(defn execute-query
-;  "Process and run a native (raw SQL) QUERY."
-;  [driver {:keys [database settings], query :native, :as outer-query}]
-;
-;  (let [db-connection (sql/db->jdbc-connection-spec
-;                       (if (true? (get-in database [:details :impersonate] ))
-;                         (assoc-in database [:details :user] ((db/select-one [User :first_name], :id api/*current-user-id* , :is_active true) :first_name)) database))]
-;    (let [query (assoc query :remark (qputil/query->remark outer-query))]
-;      (qprocessor/do-with-try-catch
-;       (fn []
-;         (println "DB-Connection::::::::::::::::::::::>>>>>>>>>>>>>>>>>>>>" db-connection)
-;         (qprocessor/do-in-transaction db-connection (partial run-query query nil)))))))
-
-; OLD ONE
-;(defn execute-query
-;  "Process and run a native (raw SQL) QUERY."
-;  [driver {:keys [database settings ], query :native, {sql :query, params :params} :native, :as outer-query}]
-;    (let [db-connection (sql/db->jdbc-connection-spec
-;                         (if (true? (get-in database [:details :impersonate] ))
-;                           (assoc-in database [:details :user] ((db/select-one [User :first_name], :id api/*current-user-id* , :is_active true) :first_name))
-;                           database))]
-;    (let [query (assoc query :remark  "", :query  sql, :params  nil)]
-;      (qprocessor/do-with-try-catch
-;       (fn []
-;           (qprocessor/do-in-transaction db-connection (partial qprocessor/run-query-with-out-remark query)))))))
-
-
 (defn execute-query
   "Process and run a native (raw SQL) QUERY."
   [driver {:keys [database settings], query :native, :as outer-query}]
@@ -140,7 +112,7 @@
       (qprocessor/do-with-try-catch
        (fn []
          (println "DB-Connection::::::::::::::::::::::>>>>>>>>>>>>>>>>>>>>" db-connection)
-         (qprocessor/run-query-with-out-remark driver settings db-connection query))))))
+         (qprocessor/do-in-transaction db-connection (partial qprocessor/run-query-with-out-remark query)))))))
 
 
 (defn apply-order-by
