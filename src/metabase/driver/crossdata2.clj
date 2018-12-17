@@ -34,6 +34,16 @@
   (getName [_] "Crossdata2"))
 
 
+(def ^:private ^:const current-db-connection
+  "Check if the current XD instance is impersonated."
+  {
+    sql/db->jdbc-connection-spec
+      (if (true? (get-in database [:details :impersonate] ))
+        (assoc-in database [:details :user] ((db/select-one [User :first_name], :id api/*current-user-id* , :is_active true) :first_name)) database)
+    }
+  )
+
+
 (def ^:private ^:const column->base-type
   "Map of Crossdata2 column types -> Field base types.
    Add more mappings here as you come across them."
@@ -105,23 +115,19 @@
   "Process and run a native (raw SQL) QUERY."
   [driver {:keys [database settings], query :native, :as outer-query}]
 
-  (let [db-connection (sql/db->jdbc-connection-spec
-                       (if (true? (get-in database [:details :impersonate] ))
-                         (assoc-in database [:details :user] ((db/select-one [User :first_name], :id api/*current-user-id* , :is_active true) :first_name)) database))]
-    (let [query (assoc query :remark (qputil/query->remark outer-query))]
-      (qprocessor/do-with-try-catch
-       (fn []
-         (println "DB-Connection::::::::::::::::::::::>>>>>>>>>>>>>>>>>>>>" db-connection)
-         (qprocessor/do-in-transaction db-connection (partial qprocessor/run-query-with-out-remark query)))))))
+  (let [query (assoc query :remark (qputil/query->remark outer-query))]
+    (qprocessor/do-with-try-catch
+     (fn []
+       (println "DB-CONNECTION ::::::::::::::::::::::>>>>>>>>>>>>>>>>>>>>" current-db-connection)
+       (qprocessor/do-in-transaction current-db-connection (partial qprocessor/run-query-with-out-remark query))))))
 
 
 (defn apply-order-by
   "Apply `order-by` clause to HONEYSQL-FORM. Default implementation of `apply-order-by` for SQL drivers."
   [_ honeysql-form {subclauses :order-by}]
   (loop [honeysql-form honeysql-form, [{:keys [field direction]} & more] subclauses]
-    (let [honeysql-form (h/merge-order-by honeysql-form [(keyword (qprocessor/display_name field)) (case direction
-                                                                             :ascending  :asc
-                                                                             :descending :desc)])]
+    (let [honeysql-form (h/merge-order-by honeysql-form [(keyword (qprocessor/display_name field))
+                                                         (case direction :ascending  :asc :descending :desc)])]
       (if (seq more)
         (recur honeysql-form more)
         honeysql-form))))
