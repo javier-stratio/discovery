@@ -36,7 +36,7 @@
 
 (def ^:private ^:const current-impersonated-user
   "Check if the current XD instance is impersonated."
-  {(db/select-one [User :first_name], :id api/*current-user-id* , :is_active true) :first_name })
+  (get @api/*current-user* :first_name))
 
 
 (def ^:private ^:const column->base-type
