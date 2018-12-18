@@ -33,12 +33,6 @@
   clojure.lang.Named
   (getName [_] "Crossdata2"))
 
-
-(def ^:private ^:const current-impersonated-user
-  "Check if the current XD instance is impersonated."
-  (get @api/*current-user* :first_name))
-
-
 (def ^:private ^:const column->base-type
   "Map of Crossdata2 column types -> Field base types.
    Add more mappings here as you come across them."
@@ -110,13 +104,9 @@
   "Process and run a native (raw SQL) QUERY."
   [driver {:keys [database settings], query :native, :as outer-query}]
 
-  (println "*****HOLA***> " @api/*current-user*)
-  (println "*****ADIOS***> " (get @api/*current-user* :first_name))
-  (println "*****ADIOS3333***> " (get api/*current-user* :first_name))
-
   (let [db-connection (sql/db->jdbc-connection-spec
                        (if (true? (get-in database [:details :impersonate] ))
-                         (assoc-in database [:details :user] current-impersonated-user) database))]
+                         (assoc-in database [:details :user] (get @api/*current-user* :first_name)) database))]
     (let [query (assoc query :remark (qputil/query->remark outer-query))]
       (qprocessor/do-with-try-catch
        (fn []
