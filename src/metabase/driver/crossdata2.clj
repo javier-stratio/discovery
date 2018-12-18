@@ -36,9 +36,6 @@
 
 (def ^:private ^:const current-impersonated-user
   "Check if the current XD instance is impersonated."
-  (println "*****HOLA***> " @api/*current-user*)
-  (println "*****ADIOS***> " (get @api/*current-user* :first_name))
-  (println "*****ADIOS3333***> " (get api/*current-user* :first_name))
   (get @api/*current-user* :first_name))
 
 
@@ -112,6 +109,10 @@
 (defn execute-query
   "Process and run a native (raw SQL) QUERY."
   [driver {:keys [database settings], query :native, :as outer-query}]
+
+  (println "*****HOLA***> " @api/*current-user*)
+  (println "*****ADIOS***> " (get @api/*current-user* :first_name))
+  (println "*****ADIOS3333***> " (get api/*current-user* :first_name))
 
   (let [db-connection (sql/db->jdbc-connection-spec
                        (if (true? (get-in database [:details :impersonate] ))
