@@ -165,6 +165,7 @@
    Theses connection pools are cached so we don't create multiple ones to the same DB."
   [{:keys [id], :as database}]
 
+  (println "--**-- We have an existing pool for this database, so use it  --**--" (contains? @database-id->connection-pool id))
   (println "---- NOCOND ----" (get-in database [:details :impersonate]))
   (println (if (true? (get-in database [:details :impersonate])) "******* IMPERSONATED -> new-connection" "******* NOT-IMPERSONATED->check-existing"))
 
