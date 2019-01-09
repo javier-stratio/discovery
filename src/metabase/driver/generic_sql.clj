@@ -162,13 +162,13 @@
   "Return a JDBC connection spec that includes a cp30 `ComboPooledDataSource`.
    Theses connection pools are cached so we don't create multiple ones to the same DB."
   [{:keys [id], :as database}]
+  (println "---- NOCOND ----" (get-in database [:details :impersonate]))
+  (println "***** condition ***** " (true? (get-in database [:details :impersonate])))
   (if (contains? @database-id->connection-pool id)
     ;; we have an existing pool for this database, so use it
     (if (true? (get-in database [:details :impersonate]))
-      ((println "*********** ES TRUE")
-      (notify-database-updated (get database :engine) database))
-      ((println "*********** ES FALSE")
-        (get @database-id->connection-pool id)))
+      (notify-database-updated (get database :engine) database)
+      (get @database-id->connection-pool id))
 
     ;; create a new pool and add it to our cache, then return it
     (u/prog1 (create-connection-pool database)
