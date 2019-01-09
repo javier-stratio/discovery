@@ -134,6 +134,7 @@
 (defn- create-connection-pool
   "Create a new C3P0 `ComboPooledDataSource` for connecting to the given DATABASE."
   [{:keys [id engine details]}]
+  (println "---------------- INSIDE create-connection-pool")
   (log/debug (u/format-color 'cyan "Creating new connection pool for database %d ..." id))
   (let [details-with-tunnel (ssh/include-ssh-tunnel details) ;; If the tunnel is disabled this returned unchanged
         spec (connection-details->spec (driver/engine->driver engine) details-with-tunnel)]
