@@ -149,6 +149,7 @@
   "We are being informed that a DATABASE has been updated, so lets shut down the connection pool (if it exists) under
    the assumption that the connection details have changed."
   [_ {:keys [id]}]
+  (println "************ INSIDE notify-database-updated")
   (when-let [pool (get @database-id->connection-pool id)]
     (log/debug (u/format-color 'red "Closing connection pool for database %d ..." id))
     ;; remove the cached reference to the pool so we don't try to use it anymore
@@ -162,8 +163,10 @@
   "Return a JDBC connection spec that includes a cp30 `ComboPooledDataSource`.
    Theses connection pools are cached so we don't create multiple ones to the same DB."
   [{:keys [id], :as database}]
+
   (println "---- NOCOND ----" (get-in database [:details :impersonate]))
-  (println "***** condition ***** " (true? (get-in database [:details :impersonate])))
+  (println (if (true? (get-in database [:details :impersonate])) "******* IMPERSONATED -> new-connection" "******* NOT-IMPERSONATED->check-existing"))
+
   (if (contains? @database-id->connection-pool id)
     ;; we have an existing pool for this database, so use it
     (if (true? (get-in database [:details :impersonate]))
