@@ -173,7 +173,7 @@
 
   (if (contains? @database-id->connection-pool id)
     ;; we have an existing pool for this database, so use it
-    (if (true? (get-in database [:details :impersonate]))
+    (if (true? (false))
       (notify-database-updated (get database :engine) database)
       (get @database-id->connection-pool id))
 
